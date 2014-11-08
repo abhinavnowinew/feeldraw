@@ -1,0 +1,140 @@
+//coded by Abhinav Dey, Bhaskar Mukherjee and Ted Moallem
+
+
+import processing.serial.*;
+
+import cc.arduino.*;
+
+Arduino arduino;
+
+import ddf.minim.*;
+
+Minim minim;
+
+AudioPlayer player;
+
+int t=0; int i=0; int range=2000; int[] megadeth= new int[range]; int[] metallica= new int[range];
+
+int nn=0, d=0, p=0; int prevX=mouseX, prevY=mouseY; float x,y,m,atx=0, a=0;
+
+void setup()
+
+{ minim = new Minim(this);
+
+player = minim.loadFile("Kenny G - Miracles The Holiday Album - 04 - Silent Night .mp3");
+
+size(800, 800);
+
+background(255);
+
+println(Arduino.list()); // Modify this line, by changing the "0" to the index of the serial // port corresponding to //your Arduino board (as it appears in the list printed by the line above).
+
+arduino = new Arduino(this, Arduino.list()[1], 57600);
+
+arduino.pinMode(8, Arduino.SERVO); }
+
+void draw()
+
+{ if(mousePressed)
+
+{stroke(0);
+
+strokeWeight(20);
+
+smooth();
+
+// Write an value to the servos, telling them to go to the corresponding
+
+// angle (for standard servos) or move at a particular speed (continuous/rotation servos).
+
+for(i=0;i<2000;i++)
+
+{ nn++;
+
+if (nn==2000) {
+
+line(prevX, prevY, mouseX, mouseY);
+
+megadeth[i]=mouseX;
+
+x = (mouseX-prevX);
+
+y = (mouseY-prevY);
+
+if (x!=0) { m = -y / x; }
+
+
+atx=57.27*atan(m);
+
+if((x<0 && y<0) || (x>0 && y>0))
+
+{d=abs(round(atx));}
+
+if((x>0 && y<0) || (x<0 && y>0))
+
+{d=180-abs(round(atx));}
+
+metallica[i]=d;
+
+arduino.servoWrite(8,d );
+
+println(d);
+
+nn = 0;
+
+prevX=mouseX;
+
+prevY=mouseY; }}}
+
+else
+{color a = get(mouseX, mouseY);
+
+if(color(a)==color(0))
+
+{java.awt.Toolkit.getDefaultToolkit().beep();;
+
+delay(15);
+
+p++;
+
+if(p==2)
+
+{ x = (mouseX-prevX);
+
+y = (mouseY-prevY);
+
+if (x!=0) { m = -y / x; }
+
+atx=57.27*atan(m);
+
+if((x<0 && y<0) || (x>0 && y>0))
+
+{d=abs(round(atx));}
+
+if((x>0 && y<0) || (x<0 && y>0))
+
+{d=180-abs(round(atx));}
+
+for(i=0;i<2000;i++)
+
+{if(mouseX == megadeth[i])
+
+{ d=metallica[i]; } }
+
+arduino.servoWrite(8,d );
+
+println(d);
+
+p=0;
+
+prevX=mouseX;
+
+prevY=mouseY;}}
+
+else {}
+
+prevX=mouseX;
+
+prevY=mouseY;}
+
+}
