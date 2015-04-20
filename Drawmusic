@@ -1,0 +1,142 @@
+
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim       minim;
+AudioOutput out;
+Oscil       wave;
+AudioRecorder recorder;
+
+ float px, py, p, q;
+void setup()
+{
+  size(1000, 600, P3D);
+  
+  minim = new Minim(this);
+  
+  // use the getLineOut method of the Minim object to get an AudioOutput object
+  out = minim.getLineOut();
+    recorder = minim.createRecorder(out, "new.wav"); 
+  // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
+  wave = new Oscil( 440, 0.5f, Waves.SINE );
+  // patch the Oscil to the output
+  wave.patch( out );
+    background(0);
+}
+
+void draw()
+{if(mousePressed)
+   {strokeWeight(1);
+   stroke(255);
+     line(px, py, mouseX, mouseY);
+
+  p=width/2;
+  q=mouseX-p;
+  p=q/p;
+  println(p);
+  out.setPan(p);
+ // delay(4);
+  // now we can start the sequencer again to hear our sequence
+  float amp = map( height-mouseY, 0, height, 1, 0 );
+  wave.setAmplitude( amp );
+  }
+  px=mouseX;
+     py=mouseY;
+   if ( recorder.isRecording() )
+  {
+    text("Currently recording...", 5, 15);
+  }
+  else
+  {
+    text("Not recording.", 5, 15);
+  }
+  // draw the waveform of the output
+  for(int i = 0; i < out.bufferSize() - 1; i++)
+  {
+    line( i, 50  - out.left.get(i)*50,  i+1, 50  - out.left.get(i+1)*50 );
+    line( i, 150 - out.right.get(i)*50, i+1, 150 - out.right.get(i+1)*50 );
+  }
+
+  // draw the waveform we are using in the oscillator
+  stroke( 128, 0, 0 );
+  strokeWeight(4);
+  for( int i = 0; i < width-1; ++i )
+  {
+    point( i, height/2 - (height*0.49) * wave.getWaveform().value( (float)i / width ) );
+  }
+}
+
+void mouseMoved()
+{
+  // usually when setting the amplitude and frequency of an Oscil
+  // you will want to patch something to the amplitude and frequency inputs
+  // but this is a quick and easy way to turn the screen into
+  // an x-y control for them.
+  
+ 
+  
+  float freq = map( 440, 0, width, 110, 880 );
+  wave.setFrequency( freq );
+}
+
+void keyPressed()
+{ 
+  switch( key )
+  {
+    case '1': 
+      wave.setWaveform( Waves.SINE );
+      break;
+     
+    case '2':
+      wave.setWaveform( Waves.TRIANGLE );
+      break;
+     
+    case '3':
+      wave.setWaveform( Waves.SAW );
+      break;
+    
+    case '4':
+      wave.setWaveform( Waves.SQUARE );
+      break;
+      
+    case '5':
+      wave.setWaveform( Waves.QUARTERPULSE );
+      break;
+     
+    default: break; 
+  }
+}
+
+
+void keyReleased()
+{
+  if ( key == 'r' ) 
+  {
+
+    if ( recorder.isRecording() ) 
+    {
+      recorder.endRecord();
+    }
+    else 
+    {
+      recorder.beginRecord();
+    }
+  }
+  if ( key == 's' )
+  {
+    // we've filled the file out buffer, 
+    // now write it to the file we specified in createRecorder
+    // in the case of buffered recording, if the buffer is large, 
+    // this will appear to freeze the sketch for sometime
+    // in the case of streamed recording, 
+    // it will not freeze as the data is already in the file and all that is being done
+    // is closing the file.
+    // the method returns the recorded audio as an AudioRecording, 
+    // see the example  AudioRecorder >> RecordAndPlayback for more about that
+    recorder.save();
+    println("Done saving.");
+  }
+}
+
+
